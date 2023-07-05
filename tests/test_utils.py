@@ -1,9 +1,7 @@
-import asyncio
 from secrets import token_hex
-from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
-from httpx import AsyncClient, Request, Response
+from httpx import AsyncClient
 from httpx._exceptions import TimeoutException
 from pytest_httpx import HTTPXMock
 
@@ -67,9 +65,12 @@ class TestCountQuery():
         timeout = 1
         result = await count_query(urls=urls, timeout=timeout)
 
-        # для ожидаемого результат я подсчитал количество слов в теле ответа
-        # с помощью cURL:
-        # curl -s https://docs.pytest.org/en/7.3.x/contents.html | grep -o 'pytest' | wc -l
+        """"
+        для ожидаемого результат я подсчитал количество слов в теле ответа
+        с помощью cURL:
+        curl -s https://docs.pytest.org/en/7.3.x/contents.html | 
+        grep -o 'pytest' | wc -l
+        """
         assert result == [
             {
                 'url': 'https://docs.pytest.org/en/7.3.x/contents.html',
