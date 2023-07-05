@@ -1,3 +1,5 @@
+![Tests](https://github.com/4uku/RequestsQuery/blob/main/.github/workflows/main.yml/badge.svg)
+
 Для запуска потребуется установленный Docker.
 
 1. Клонируйте репозиторий.
