@@ -1,5 +1,3 @@
-from secrets import token_hex
-
 import pytest
 from httpx import AsyncClient
 from httpx._exceptions import TimeoutException
@@ -37,58 +35,47 @@ class TestFetch():
 class TestCountQuery():
 
     @pytest.mark.asyncio
-    async def test_count_query(self):
+    async def test_count_query_with_all_data(self, httpx_mock: HTTPXMock):
         """
-        Тестирование функции подсчета количества вхождений слова в тело ответа.
-
-        Наверное, этот тест стоило разбить на несколько мелких.
+        Тестирование функции count_query с заведомо присутствующими словамми.
+        Результат должен содержать ссылку, количество найденных слов и
+        статус 'ok.
         """
-        random_url = f'https://{token_hex(8)}.ru' 
+        expect = [{'url': 'http://test_url', 'count': 3, 'status': 'ok'}]
         urls = [
-            {
-                'url': 'https://docs.pytest.org/en/7.3.x/contents.html',
-                'query': 'pytest'
-            },
-            {
-                'url': 'https://docs.pytest.org/en/7.3.x/contents.html',
-                'query': 'assert'
-            },
-            {
-                'url': 'https://docs.pytest.org/en/7.3.x/contents.html',
-                'query': 'молоко'
-            },
-            {
-                'url': random_url,
-                'query': 'бананы'
-            }
-        ]
-        timeout = 1
-        result = await count_query(urls=urls, timeout=timeout)
+            {'url': 'http://test_url', 'query': 'python'}]
 
-        """"
-        для ожидаемого результат я подсчитал количество слов в теле ответа
-        с помощью cURL:
-        curl -s https://docs.pytest.org/en/7.3.x/contents.html | 
-        grep -o 'pytest' | wc -l
+        httpx_mock.add_response(text='python python python')
+        async with AsyncClient() as client: # ruff: noqa: F841
+            result = await count_query(urls, timeout=1)
+            assert result == expect
+
+    @pytest.mark.asyncio
+    async def test_count_query_with_zero(self, httpx_mock: HTTPXMock):
         """
-        assert result == [
-            {
-                'url': 'https://docs.pytest.org/en/7.3.x/contents.html',
-                'count': 75,
-                'status': 'ok'
-            }, 
-            {
-                'url': 'https://docs.pytest.org/en/7.3.x/contents.html',
-                'count': 20,
-                'status': 'ok'
-            },
-            {
-                'url': 'https://docs.pytest.org/en/7.3.x/contents.html',
-                'count': 0,
-                'status': 'ok'
-            },
-            {
-                'url': random_url,
-                'status': 'error'
-            }
-        ]
+        Тестирование функции count_query. Результат должен содержать ссылку,
+        ноль найденных слов и статус 'ok'.
+        """
+        expect = [{'url': 'http://test_url', 'count': 0, 'status': 'ok'}]
+        urls = [
+            {'url': 'http://test_url', 'query': 'python'}]
+
+        httpx_mock.add_response(text='wrong')
+        async with AsyncClient() as client: # ruff: noqa: F841
+            result = await count_query(urls, timeout=1)
+            assert result == expect
+
+    @pytest.mark.asyncio
+    async def test_count_query_with_status_error(self, httpx_mock: HTTPXMock):
+        """
+        Тестирование функции count_query. Результат должен содержать ссылку,
+        и статус 'error'.
+        """
+        expect = [{'url': 'http://test_url', 'status': 'error'}]
+        urls = [
+            {'url': 'http://test_url', 'query': 'python'}]
+
+        httpx_mock.add_exception(TimeoutException('timeout_error'))
+        async with AsyncClient() as client: # ruff: noqa: F841
+            result = await count_query(urls, timeout=1)
+            assert result == expect
