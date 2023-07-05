@@ -16,7 +16,7 @@ async def fetch(
             follow_redirects=True
         )
         return response
-    except:
+    except: # ruff: noqa: E722
         return None
 
 
