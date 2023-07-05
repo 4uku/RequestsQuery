@@ -23,6 +23,8 @@ pluggy==1.2.0
 pydantic==1.10.10
 pytest==7.4.0
 pytest-asyncio==0.21.0
+pytest-httpx==0.22.0
+pytest-mock==3.11.1
 python-dotenv==1.0.0
 python-multipart==0.0.6
 PyYAML==6.0
